@@ -1,0 +1,11 @@
+Flujo de trabajo:
+
+Abrir factura pdf en correo -> Crear carpeta "Eventid . Nombre" -> Agregar documentos -> Abrir cofidi y HPR -> Ingresar datos -> Subir documentos
+
+Flujo Programa 
+
+Inicio -> Pedir evento ID -> Búsqueda de evento y datos en excel -> Creacion de carpeta con titulo "Eventid . Nombre" -> 
+Despliegue de datos : Número de evento, Nombre Speaker, ID Vendor, Número ICD contrato, Dirección correo elec. ponente/consultor, CECO , OI -> 
+Abrir Edge y hacer login a "https://hpr.jnj.com/LogOn/Login?ReturnUrl=%2f" -> Despues de hacer login buscar sustituir el en el vinculo el eventid "" -> 
+Entrar a "https://red.cofidi.com.mx/Upload.aspx" y rellenar datos como "RFC de Cliente (Receptor de Comprobante)*" y "Correo Electrónico del Proveedor para entrega de acuse *" ->
+Pasar a la siguiente pagina 
