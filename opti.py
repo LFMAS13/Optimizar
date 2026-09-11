@@ -9,10 +9,11 @@ Matar procesos despues: ps aux | grep opti.py
         #pip install selenium
         #safaridriver --enable
         #pip3 install pandas openpyxl
+        #pip3 install webdriver-manager #Para correr en Chrome, no Safari
     """
     
-
-
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager #Para correr en Chrome
 import pandas as pd
 import os
 import csv
@@ -31,18 +32,29 @@ ENVIAR_ID = 'ctl00_MainContent_Wizard1_StartNavigationTemplateContainerID_StartN
 EXCEL_PATH = 'eventos.xlsx'   # <- ajusta el nombre/ruta real de tu archivo
 LOG_FILE = 'eventos_cofidi.csv'
 
+#HPR LOGIN
+USER_ID = 'Result_UserName'
+PASSWORD_ID = 'Result_Password'
+LOGIN_BTN_SELECTOR = '.btn.btn-default.btn-block'  # selector CSS, no ID
+
+#Credenciales
+USUARIO_HPR = 'tu_usuario_real'
+PASSWORD_HPR = 'tu_contraseña_real'
+
+
 
 def buscar_datos_evento(id_evento):
     """Busca el ID de evento en el Excel y regresa (rfc, correo, nombre)."""
     df = pd.read_excel(EXCEL_PATH, dtype=str)
-    fila = df[df['ID'] == str(id_evento)]
+
+    fila = df[df['Número de evento'] == str(id_evento)]
 
     if fila.empty:
         raise ValueError(f"No se encontró el ID de evento '{id_evento}' en el Excel")
 
-    rfc = fila.iloc[0]['RFC']
-    correo = fila.iloc[0]['Correo']
-    nombre = fila.iloc[0]['Nombre']   # <- ajusta al nombre real de esa columna en tu Excel
+    rfc = fila.iloc[0]['ID Vendor']  # <- ajustar si el RFC va en otra columna
+    correo = fila.iloc[0]['Dirección correo elec. ponente/consultor']
+    nombre = fila.iloc[0]['Nombre Speaker']
 
     return rfc, correo, nombre
 
@@ -65,7 +77,8 @@ def guardar_evento(id_evento, rfc, correo, estado):
 
 
 def cofidi(rfc, correo, id_evento):
-    driver = webdriver.Safari()
+    #driver = webdriver.Safari()
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     estado = 'iniciado'
     try:
         driver.get('https://red.cofidi.com.mx/Upload.aspx')
@@ -81,7 +94,7 @@ def cofidi(rfc, correo, id_evento):
         
         
         enviar_btn = WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.ID, 'ctl00_MainContent_Wizard1_StartNavigationTemplateContainerID_StartNextButton'))
+            EC.element_to_be_clickable((By.ID, ENVIAR_ID))
         )
         enviar_btn.click()
         estado = 'enviado'
@@ -98,6 +111,45 @@ def cofidi(rfc, correo, id_evento):
 
     return driver
 
+
+def login_hpr(user, password):
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    #driver = webdriver.Safari()
+    try:
+        driver.get('https://hpr.jnj.com/LogOn/Login?ReturnUrl=%2flogin')
+        time.sleep(2)
+
+        driver.find_element(By.ID, USER_ID).send_keys(user)
+
+        driver.find_element(By.ID, PASSWORD_ID).send_keys(password)
+
+        login_btn = WebDriverWait(driver, 15).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, LOGIN_BTN_SELECTOR))
+        )
+        login_btn.click()
+
+        print("Login enviado")
+
+    except Exception as e:
+        print(f" ERROR: {type(e).__name__}: {e}")
+
+    return driver
+
+def buscar_eventos_hpr(driver, id_evento):
+    try:
+        url_busqueda = f'https://hpr.jnj.com/Home/SearchList?Keyword={id_evento}'
+        driver.get(url_busqueda)
+        time.sleep(2)
+
+
+    except Exception as e:
+        print(f"❌ ERROR: {type(e).__name__}: {e}")
+
+    return driver
+
+        
+    
+
 #-----------------Flujo de programa--------------#
 CARPETA_SCRIPT = os.path.dirname(os.path.abspath(__file__))
 
@@ -106,17 +158,16 @@ try:
 
     rfc, correo, nombre = buscar_datos_evento(id_evento)
     print(f"Datos encontrados -> RFC: {rfc} | Correo: {correo} | Nombre: {nombre}")
-    
+
     carpeta_evento = crear_carpeta_evento(id_evento, nombre)
 
-    driver = cofidi(rfc, correo, id_evento)
-    
+    driver_cofidi = cofidi(rfc, correo, id_evento)
+
+    driver_hpr = login_hpr(USUARIO_HPR, PASSWORD_HPR)  # Reemplaza con tus credenciales
+    driver_hpr = buscar_eventos_hpr(driver_hpr, id_evento)
 
 except Exception as e:
     print(f" ERROR en el flujo principal: {type(e).__name__}: {e}")
-    
 
 while True:
     time.sleep(3600)
-    
-
