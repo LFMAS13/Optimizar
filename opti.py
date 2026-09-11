@@ -10,6 +10,10 @@ Matar procesos despues: ps aux | grep opti.py
         #safaridriver --enable
         #pip3 install pandas openpyxl
         #pip3 install webdriver-manager #Para correr en Chrome, no Safari
+        #pip install pandas openpyxl selenium webdriver-manager
+        Windows:
+        pip install pandas openpyxl selenium webdriver-manager
+        python opti.py
     """
     
 from selenium.webdriver.chrome.service import Service
@@ -24,6 +28,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import re
 
 RFC_ID = 'ctl00_MainContent_Wizard1_TextBox1'
 CORREO_ID = 'ctl00_MainContent_Wizard1_TextBox2'
@@ -59,9 +64,13 @@ def buscar_datos_evento(id_evento):
     return rfc, correo, nombre
 
 
+def limpiar_nombre_carpeta(texto):
+    """Quita caracteres no válidos para nombres de carpeta en Windows."""
+    return re.sub(r'[\\/:*?"<>|]', '', texto).strip()
+
 def crear_carpeta_evento(id_evento, nombre):
-    """Crea una carpeta tipo 'Eventoid . Nombre' y regresa su ruta."""
-    nombre_carpeta = f"{id_evento} . {nombre}"
+    nombre_limpio = limpiar_nombre_carpeta(nombre)
+    nombre_carpeta = f"{id_evento} . {nombre_limpio}"
     ruta_carpeta = os.path.join(CARPETA_SCRIPT, nombre_carpeta)
     os.makedirs(ruta_carpeta, exist_ok=True)
     return ruta_carpeta
