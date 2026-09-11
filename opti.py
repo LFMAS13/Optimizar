@@ -34,7 +34,8 @@ RFC_ID = 'ctl00_MainContent_Wizard1_TextBox1'
 CORREO_ID = 'ctl00_MainContent_Wizard1_TextBox2'
 ENVIAR_ID = 'ctl00_MainContent_Wizard1_StartNavigationTemplateContainerID_StartNextButton'
 
-EXCEL_PATH = 'eventos.xlsx'   # <- ajusta el nombre/ruta real de tu archivo
+EXCEL_PATH = 'BASE SC-BE-S 26 copia 2.xlsx'   # <- ajusta el nombre/ruta real de tu archivo
+EXCEL_SHEET = 'Nacionales'
 LOG_FILE = 'eventos_cofidi.csv'
 
 #HPR LOGIN
@@ -43,14 +44,17 @@ PASSWORD_ID = 'Result_Password'
 LOGIN_BTN_SELECTOR = '.btn.btn-default.btn-block'  # selector CSS, no ID
 
 #Credenciales
-USUARIO_HPR = 'tu_usuario_real'
-PASSWORD_HPR = 'tu_contraseña_real'
+USUARIO_HPR = 'mvizzuet@its.jnj.com'
+PASSWORD_HPR = 'Marieventos2026.'
 
-
+"""df = pd.read_excel('BASE SC-BE-S 26 copia 2.xlsx', sheet_name='Nacionales',dtype=str)
+print(df.columns.tolist())
+print(df.head(5))"""
 
 def buscar_datos_evento(id_evento):
     """Busca el ID de evento en el Excel y regresa (rfc, correo, nombre)."""
-    df = pd.read_excel(EXCEL_PATH, dtype=str)
+    df = pd.read_excel('BASE SC-BE-S 26 copia 2.xlsx', sheet_name='Nacionales',dtype=str)
+    df.columns=df.columns.str.strip()
 
     fila = df[df['Número de evento'] == str(id_evento)]
 
